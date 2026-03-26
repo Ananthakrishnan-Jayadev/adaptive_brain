@@ -1,35 +1,36 @@
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Sora:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --brand-primary: #3a56b0;
-  --brand-primary-light: #5570c8;
-  --brand-primary-dark: #2e4590;
-  --coral: #c46220;
-  --coral-light: #d97840;
+  --brand-primary: #6C63FF;
+  --brand-primary-light: #8B83FF;
+  --brand-primary-dark: #5A52E0;
+  --coral: #FF6B35;
+  --coral-light: #FF8A5C;
   --sage: #337842;
   --sage-light: #489058;
   --amber: #a07518;
   --amber-light: #be8e2a;
   --rose: #9c3636;
   --rose-light: #b84e4e;
-  --bg-warm: #ece7df;
-  --bg-surface: #f2efe8;
+  --bg-warm: #FCF9F1;
+  --bg-surface: #FCF9F1;
   --text-primary: #121010;
   --text-secondary: #524a40;
   --text-muted: #6a6256;
-  --shadow-warm: 0 4px 14px -2px rgba(0, 0, 0, 0.1);
+  --shadow-warm: 0 4px 14px -2px rgba(0, 0, 0, 0.08);
 
-  --background: #ece7df;
+  --background: #FCF9F1;
   --foreground: #121010;
-  --skeleton: #d0c9be;
-  --border: #d0c9be;
-  --btn-border: #c4bdb2;
-  --input: #f2efe8;
-  --radius: 0.5rem;
+  --skeleton: #e8e4dc;
+  --border: #e8e4dc;
+  --btn-border: #ddd8cf;
+  --input: #FFFFFF;
+  --radius: 1.5rem;
+  --card-bg: #FFFFFF;
 }
 
 .dark {
@@ -39,7 +40,8 @@
   --border: #44403a;
   --btn-border: #44403a;
   --input: #2c2926;
-  --radius: 0.5rem;
+  --radius: 1.5rem;
+  --card-bg: #2c2926;
 }
 
 @layer base {
@@ -50,7 +52,7 @@
   }
 
   body {
-    @apply bg-surface-50 text-ink-950 font-body;
+    @apply bg-[#FCF9F1] text-ink-950 font-body;
     font-feature-settings: "cv11", "ss01";
   }
 
@@ -62,40 +64,50 @@
     @apply bg-brand-100 text-brand-900;
   }
 
+  /* Global softness: default border-radius */
+  button, [role="button"] {
+    @apply rounded-3xl;
+  }
+
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { @apply bg-transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-surface-400 rounded-full; transition: background-color 0.2s; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface-400/50 rounded-full; transition: background-color 0.2s; }
   ::-webkit-scrollbar-thumb:hover { @apply bg-surface-500; }
   * { scrollbar-width: thin; scrollbar-color: #b8b0a4 transparent; }
 }
 
 @layer components {
-  .glass { @apply bg-surface-100/80 backdrop-blur-md; }
+  .glass { @apply bg-white/60 backdrop-blur-xl border border-white/70; }
 
   .gradient-brand {
-    background: linear-gradient(135deg, #3a56b0 0%, #2e4590 50%, #243670 100%);
+    background: linear-gradient(135deg, #6C63FF 0%, #5A52E0 50%, #4840C0 100%);
   }
 
   .gradient-coral {
-    background: linear-gradient(135deg, #c46220 0%, #a0501a 50%, #7c3e14 100%);
+    background: linear-gradient(135deg, #FF6B35 0%, #E05A28 50%, #C44A1C 100%);
   }
 
   .gradient-warm {
-    background: linear-gradient(135deg, #ece7df 0%, #e0dbd2 50%, #d0c9be 100%);
+    background: linear-gradient(135deg, #FCF9F1 0%, #F5F0E5 50%, #EDE8DC 100%);
   }
 
   .gradient-celebration {
-    background: linear-gradient(135deg, #3a56b0 0%, #c46220 50%, #a07518 100%);
+    background: linear-gradient(135deg, #6C63FF 0%, #FF6B35 50%, #a07518 100%);
   }
 
   .g-button {
-    @apply rounded-[var(--radius)] border;
+    @apply rounded-3xl border;
     border-color: var(--btn-border);
   }
 
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #3a56b0, #5570c8);
+    background-image: linear-gradient(135deg, #6C63FF, #8B83FF);
+  }
+
+  /* Card base style */
+  .card-base {
+    @apply bg-white rounded-3xl border border-surface-200/50 shadow-soft;
   }
 }
 

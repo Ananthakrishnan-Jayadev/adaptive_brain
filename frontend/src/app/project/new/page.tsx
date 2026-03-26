@@ -115,9 +115,9 @@ export default function NewProjectPage() {
                 <label className="block text-sm font-medium text-ink-900 mb-1.5">
                   Hours per day you can study
                 </label>
-                <select className="w-full rounded-xl border border-surface-200 bg-surface-100 px-4 py-2.5 text-ink-800 focus:outline-none focus:ring-2 focus:ring-brand-300">
+                <select defaultValue={2} className="w-full rounded-xl border border-surface-200 bg-surface-100 px-4 py-2.5 text-ink-800 focus:outline-none focus:ring-2 focus:ring-brand-300">
                   {[0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6].map((h) => (
-                    <option key={h} value={h} selected={h === 2}>
+                    <option key={h} value={h}>
                       {h} {h === 1 ? "hour" : "hours"}
                     </option>
                   ))}

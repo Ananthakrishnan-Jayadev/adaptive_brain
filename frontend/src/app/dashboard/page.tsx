@@ -2,11 +2,12 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Flame, BookOpen } from "lucide-react";
 import AppShell from "@/components/layout/AppShell";
 import ProjectCard from "@/components/dashboard/ProjectCard";
 import DailyPriorityCard from "@/components/dashboard/DailyPriorityCard";
-import { currentUser, projects } from "@/lib/mock-data";
+import BrainMapPreview from "@/components/dashboard/BrainMapPreview";
+import { currentUser, projects, spacedRepetitionCards } from "@/lib/mock-data";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -15,32 +16,8 @@ function getGreeting() {
   return "Good evening";
 }
 
-// Floating knowledge graph nodes for the background
-const bgNodes = [
-  { x: 180, y: 480, r: 45, color: "#337842", label: "Bio", delay: 0.5 },
-  { x: 320, y: 540, r: 30, color: "#c46220", label: "Chem", delay: 0.7 },
-  { x: 80, y: 600, r: 22, color: "#3a56b0", label: "", delay: 0.9 },
-  { x: 250, y: 650, r: 35, color: "#489058", label: "DNA", delay: 0.6 },
-  { x: 420, y: 480, r: 18, color: "#a07518", label: "", delay: 1.0 },
-  { x: 500, y: 580, r: 28, color: "#9c3636", label: "", delay: 0.8 },
-  { x: 600, y: 500, r: 40, color: "#3a56b0", label: "Quiz", delay: 0.4 },
-  { x: 700, y: 600, r: 20, color: "#c46220", label: "", delay: 1.1 },
-  { x: 800, y: 520, r: 32, color: "#337842", label: "", delay: 0.6 },
-  { x: 900, y: 580, r: 24, color: "#a07518", label: "", delay: 0.9 },
-  { x: 1000, y: 500, r: 35, color: "#9c3636", label: "", delay: 0.7 },
-  { x: 1100, y: 560, r: 18, color: "#3a56b0", label: "", delay: 1.0 },
-  { x: 150, y: 700, r: 16, color: "#489058", label: "", delay: 1.2 },
-  { x: 350, y: 720, r: 25, color: "#c46220", label: "", delay: 0.8 },
-  { x: 550, y: 700, r: 20, color: "#3a56b0", label: "", delay: 1.0 },
-  { x: 750, y: 680, r: 30, color: "#337842", label: "", delay: 0.5 },
-  { x: 950, y: 700, r: 22, color: "#a07518", label: "", delay: 0.9 },
-];
-
-const bgEdges = [
-  [0, 1], [1, 3], [0, 2], [2, 3], [1, 4], [4, 5], [5, 6],
-  [6, 7], [7, 8], [8, 9], [9, 10], [10, 11], [3, 13],
-  [2, 12], [5, 14], [7, 15], [9, 16], [12, 13], [14, 15],
-];
+const today = new Date().toISOString().split("T")[0];
+const dueReviewCount = spacedRepetitionCards.filter((c) => c.next_review_date <= today).length;
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -48,148 +25,171 @@ export default function DashboardPage() {
   const priorityProject = [...activeProjects].sort(
     (a, b) => new Date(a.exam_date).getTime() - new Date(b.exam_date).getTime()
   )[0];
+  const hasStreak = currentUser.current_streak >= 7;
+  const firstName = currentUser.name.split(" ")[0];
 
   return (
     <AppShell>
-      <div className="relative min-h-[calc(100vh-56px)]">
-        {/* ============ Floating Knowledge Graph Background ============ */}
+      <div className="relative min-h-[calc(100vh-56px)] bg-[#FCF9F1]">
+        {/* ============ Ambient background blobs ============ */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <svg
-            className="absolute inset-0 w-full h-full"
-            viewBox="0 0 1200 800"
-            preserveAspectRatio="xMidYMid slice"
-            fill="none"
-          >
-            {/* Edges (connecting lines) */}
-            {bgEdges.map(([from, to], i) => {
-              const a = bgNodes[from];
-              const b = bgNodes[to];
-              return (
-                <motion.line
-                  key={`edge-${i}`}
-                  x1={a.x}
-                  y1={a.y}
-                  x2={b.x}
-                  y2={b.y}
-                  stroke="#d0c9be"
-                  strokeWidth="1.5"
-                  strokeOpacity="0.5"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 1.5, delay: 0.3 + i * 0.05 }}
-                />
-              );
-            })}
-
-            {/* Nodes (circles) */}
-            {bgNodes.map((node, i) => (
-              <motion.g key={`node-${i}`}>
-                {/* Outer glow */}
-                <motion.circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={node.r + 8}
-                  fill={node.color}
-                  fillOpacity="0.08"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: node.delay, type: "spring", stiffness: 100, damping: 15 }}
-                />
-                {/* Main circle */}
-                <motion.circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={node.r}
-                  fill={node.color}
-                  fillOpacity="0.65"
-                  initial={{ scale: 0 }}
-                  animate={{
-                    scale: 1,
-                    y: [0, -4, 0, 4, 0],
-                  }}
-                  transition={{
-                    scale: { delay: node.delay, type: "spring", stiffness: 150, damping: 12 },
-                    y: { duration: 6 + i * 0.5, repeat: Infinity, ease: "easeInOut", delay: node.delay },
-                  }}
-                />
-                {/* Inner highlight */}
-                <motion.circle
-                  cx={node.x - node.r * 0.25}
-                  cy={node.y - node.r * 0.25}
-                  r={node.r * 0.35}
-                  fill="white"
-                  fillOpacity="0.15"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: node.delay + 0.2 }}
-                />
-                {/* Label */}
-                {node.label && (
-                  <motion.text
-                    x={node.x}
-                    y={node.y + 4}
-                    textAnchor="middle"
-                    className="text-[11px] font-semibold fill-white"
-                    fillOpacity="0.9"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: node.delay + 0.3 }}
-                  >
-                    {node.label}
-                  </motion.text>
-                )}
-              </motion.g>
-            ))}
-          </svg>
+          <motion.div
+            animate={{ x: [0, 50, -30, 0], y: [0, -30, 20, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-20 -left-32 w-96 h-96 rounded-full bg-[#6C63FF]/8 blur-[100px]"
+          />
+          <motion.div
+            animate={{ x: [0, -40, 20, 0], y: [0, 20, -40, 0] }}
+            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+            className="absolute top-60 -right-24 w-80 h-80 rounded-full bg-[#FF6B35]/8 blur-[100px]"
+          />
+          <motion.div
+            animate={{ x: [0, 30, -20, 0], y: [0, -20, 30, 0] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+            className="absolute bottom-20 left-1/3 w-72 h-72 rounded-full bg-sage-400/8 blur-[100px]"
+          />
         </div>
 
-        {/* ============ Main Content (on top of background) ============ */}
+        {/* ============ Main Content ============ */}
         <div className="relative z-10 space-y-8">
-          {/* Greeting */}
+          {/* ── Greeting with mascot ── */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-4"
           >
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink-900">
-              {getGreeting()}, {currentUser.name.split(" ")[0]} 👋
-            </h1>
-            <p className="text-ink-500 mt-1">
-              {currentUser.current_streak > 0
-                ? `You're on a ${currentUser.current_streak}-day streak. Keep it going!`
-                : "Ready to start studying?"}
-            </p>
+            {/* Mascot */}
+            <motion.div
+              initial={{ scale: 0, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
+              className="flex-shrink-0 relative"
+            >
+              <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-14 h-14 sm:w-16 sm:h-16">
+                <circle cx="40" cy="40" r="24" fill="#D4A04A" />
+                <circle cx="40" cy="42" r="20" fill="#E6B85C" />
+                <ellipse cx="18" cy="30" rx="8" ry="12" fill="#C49240" transform="rotate(-15 18 30)" />
+                <ellipse cx="62" cy="30" rx="8" ry="12" fill="#C49240" transform="rotate(15 62 30)" />
+                <ellipse cx="19" cy="31" rx="5" ry="8" fill="#D4A04A" transform="rotate(-15 19 31)" />
+                <ellipse cx="61" cy="31" rx="5" ry="8" fill="#D4A04A" transform="rotate(15 61 31)" />
+                <ellipse cx="40" cy="48" rx="10" ry="7" fill="#F0D080" />
+                <ellipse cx="40" cy="45" rx="3.5" ry="2.5" fill="#3D2B1F" />
+                <path d="M36 50 Q40 54 44 50" stroke="#3D2B1F" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+                {/* Happy eyes for streak */}
+                {hasStreak ? (
+                  <>
+                    <path d="M28 37 Q32 33 36 37" stroke="#3D2B1F" strokeWidth="2" strokeLinecap="round" fill="none" />
+                    <path d="M44 37 Q48 33 52 37" stroke="#3D2B1F" strokeWidth="2" strokeLinecap="round" fill="none" />
+                  </>
+                ) : (
+                  <>
+                    <circle cx="32" cy="38" r="3.5" fill="#3D2B1F" />
+                    <circle cx="48" cy="38" r="3.5" fill="#3D2B1F" />
+                    <circle cx="33" cy="36.5" r="1.2" fill="white" />
+                    <circle cx="49" cy="36.5" r="1.2" fill="white" />
+                  </>
+                )}
+                <circle cx="32" cy="38" r="7" stroke="#5A4A3A" strokeWidth="1.8" fill="none" />
+                <circle cx="48" cy="38" r="7" stroke="#5A4A3A" strokeWidth="1.8" fill="none" />
+                <path d="M39 38 L41 38" stroke="#5A4A3A" strokeWidth="1.8" />
+                <path d="M25 36 L16 34" stroke="#5A4A3A" strokeWidth="1.8" />
+                <path d="M55 36 L64 34" stroke="#5A4A3A" strokeWidth="1.8" />
+              </svg>
+
+              {/* Fire crown for 7+ day streak */}
+              {hasStreak && (
+                <motion.div
+                  animate={{ y: [0, -2, 0], scale: [1, 1.05, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -top-3 left-1/2 -translate-x-1/2"
+                >
+                  <Flame className="w-6 h-6 text-coral-500 fill-coral-400 drop-shadow-[0_0_6px_rgba(255,107,53,0.5)]" />
+                </motion.div>
+              )}
+            </motion.div>
+
+            <div>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight">
+                {getGreeting()}, {firstName}
+              </h1>
+              <p className="text-ink-500 mt-0.5 text-sm sm:text-base">
+                {currentUser.current_streak > 0 ? (
+                  <span className="flex items-center gap-1.5">
+                    <Flame className="w-4 h-4 text-coral-500 fill-coral-400 inline" />
+                    {currentUser.current_streak}-day streak — keep it going!
+                  </span>
+                ) : (
+                  "Ready to start studying?"
+                )}
+              </p>
+            </div>
           </motion.div>
 
-          {/* Daily Priority */}
-          {activeProjects.length > 1 && priorityProject && (
-            <DailyPriorityCard project={priorityProject} />
+          {/* ── Priority Hero + Brain Map ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+            {/* Priority card — takes 3 cols */}
+            <div className="lg:col-span-3">
+              {priorityProject && <DailyPriorityCard project={priorityProject} />}
+            </div>
+
+            {/* Brain Map — takes 2 cols */}
+            <div className="lg:col-span-2">
+              <BrainMapPreview projectId="proj_001" />
+            </div>
+          </div>
+
+          {/* ── Reviews due banner ── */}
+          {dueReviewCount > 0 && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => router.push("/review")}
+              className="w-full relative overflow-hidden rounded-2xl p-4 sm:p-5 text-left group"
+            >
+              <div className="absolute inset-0 bg-coral-500/8 backdrop-blur-sm border border-coral-200/50 rounded-2xl" />
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-coral-100 flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-coral-500" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-ink-800 text-sm">
+                      {dueReviewCount} flashcards due for review
+                    </p>
+                    <p className="text-xs text-ink-500">Keep those memories fresh</p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-coral-500 group-hover:text-coral-600 transition-colors">
+                  Review now &rarr;
+                </span>
+              </div>
+            </motion.button>
           )}
 
-          {/* Projects Grid */}
+          {/* ── Active Projects ── */}
           <div>
-            <h2 className="font-display text-lg font-semibold text-ink-900 mb-4">
-              Active Projects
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-lg font-bold text-ink-900 tracking-tight">
+                Active Projects
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => router.push("/project/new")}
+                className="flex items-center gap-1.5 text-xs font-semibold text-brand-500 hover:text-brand-600 transition-colors px-3 py-1.5 rounded-full bg-brand-50 hover:bg-brand-100"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                New Project
+              </motion.button>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {activeProjects.map((project, i) => (
                 <ProjectCard key={project.id} project={project} index={i} />
               ))}
-
-              {/* Create New Project Card */}
-              <motion.button
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: activeProjects.length * 0.1 }}
-                whileHover={{ y: -3, boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.1)" }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => router.push("/project/new")}
-                className="h-full min-h-[180px] rounded-2xl border-2 border-dashed border-surface-300 bg-surface-100/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-ink-500 hover:text-sage-500 hover:border-sage-300 transition-colors"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-surface-200 flex items-center justify-center">
-                  <Plus className="w-6 h-6" />
-                </div>
-                <span className="font-medium text-sm">Create New Project</span>
-              </motion.button>
             </div>
           </div>
         </div>

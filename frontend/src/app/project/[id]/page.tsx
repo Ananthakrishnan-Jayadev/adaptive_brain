@@ -194,7 +194,11 @@ export default function ProjectDashboardPage() {
                 })}
               </div>
 
-              {viewMode === "path" && <StudyPath projectId={projectId} />}
+              {viewMode === "path" && (
+                <div className="bg-[#FCF9F1] rounded-3xl p-4 sm:p-6 shadow-soft border border-surface-200/50">
+                  <StudyPath projectId={projectId} />
+                </div>
+              )}
               {viewMode === "list" && <TopicMap projectId={projectId} />}
               {viewMode === "calendar" && <CalendarView projectId={projectId} />}
             </div>

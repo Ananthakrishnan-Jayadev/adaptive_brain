@@ -3,10 +3,10 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import AppShell from "@/components/layout/AppShell";
-import Card from "@/components/ui/Card";
+import ActivityHeatmap from "@/components/profile/ActivityHeatmap";
 import Badge from "@/components/ui/Badge";
 import { sessionHistory, projects } from "@/lib/mock-data";
-import { Clock, Target, BookOpen, Zap } from "lucide-react";
+import { Clock, Target, BookOpen, Zap, Calendar } from "lucide-react";
 
 export default function HistoryPage() {
   const [filterProject, setFilterProject] = useState("all");
@@ -18,22 +18,27 @@ export default function HistoryPage() {
   const totalSessions = sessionHistory.length;
   const totalHours = Math.round(sessionHistory.reduce((sum, s) => sum + s.duration_minutes, 0) / 60);
   const avgAccuracy = Math.round(sessionHistory.reduce((sum, s) => sum + s.accuracy, 0) / sessionHistory.length);
+  const totalXP = sessionHistory.reduce((sum, s) => sum + s.xp_earned, 0);
 
   const summaryStats = [
-    { icon: BookOpen, label: "Sessions", value: totalSessions },
-    { icon: Clock, label: "Total Hours", value: totalHours },
-    { icon: Target, label: "Avg Accuracy", value: `${avgAccuracy}%` },
-    { icon: Zap, label: "Total XP", value: sessionHistory.reduce((sum, s) => sum + s.xp_earned, 0).toLocaleString() },
+    { icon: BookOpen, label: "Sessions", value: totalSessions, color: "text-brand-500" },
+    { icon: Clock, label: "Total Hours", value: totalHours, color: "text-sage-500" },
+    { icon: Target, label: "Avg Accuracy", value: `${avgAccuracy}%`, color: "text-coral-500" },
+    { icon: Zap, label: "Total XP", value: totalXP.toLocaleString(), color: "text-amber-500" },
   ];
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="font-display text-2xl font-bold text-ink-900">
+      <div className="min-h-[calc(100vh-56px)] bg-[#FCF9F1] space-y-6">
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-display text-2xl sm:text-3xl font-bold text-ink-900 tracking-tight"
+        >
           Study History
         </motion.h1>
 
-        {/* Summary */}
+        {/* Summary stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {summaryStats.map((stat, i) => {
             const Icon = stat.icon;
@@ -43,9 +48,9 @@ export default function HistoryPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-surface-100 rounded-xl p-4 border border-surface-200 shadow-soft"
+                className="bg-white/60 backdrop-blur-xl rounded-2xl p-4 border border-white/70 shadow-soft"
               >
-                <Icon className="w-5 h-5 text-brand-500 mb-2" />
+                <Icon className={`w-5 h-5 ${stat.color} mb-2`} />
                 <p className="font-display text-xl font-bold text-ink-900">{stat.value}</p>
                 <p className="text-xs text-ink-500">{stat.label}</p>
               </motion.div>
@@ -53,49 +58,24 @@ export default function HistoryPage() {
           })}
         </div>
 
-        {/* Charts placeholder */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <h3 className="font-display font-semibold text-ink-900 mb-3">Readiness Trend</h3>
-            <div className="h-40 bg-surface-100 rounded-xl flex items-center justify-center">
-              <div className="flex items-end gap-1 h-24">
-                {[30, 35, 38, 42, 40, 45, 48, 52, 55, 58, 62, 65, 67, 72].map((v, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${v}%` }}
-                    transition={{ delay: i * 0.05 }}
-                    className="w-4 bg-brand-400 rounded-t"
-                  />
-                ))}
-              </div>
-            </div>
-          </Card>
-          <Card>
-            <h3 className="font-display font-semibold text-ink-900 mb-3">Study Time (Last 14 days)</h3>
-            <div className="h-40 bg-surface-100 rounded-xl flex items-center justify-center">
-              <div className="flex items-end gap-1.5 h-24">
-                {[90, 110, 120, 100, 95, 85, 0, 115, 100, 120, 65, 55, 80, 8].map((v, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${(v / 120) * 100}%` }}
-                    transition={{ delay: i * 0.05 }}
-                    className="w-5 bg-coral-400 rounded-t"
-                  />
-                ))}
-              </div>
-            </div>
-          </Card>
-        </div>
+        {/* Activity Heatmap */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white/50 backdrop-blur-xl rounded-3xl border border-white/60 p-5 sm:p-6 shadow-soft"
+        >
+          <ActivityHeatmap />
+        </motion.div>
 
         {/* Filter */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-ink-500">Filter by:</span>
+          <Calendar className="w-4 h-4 text-ink-400" />
+          <span className="text-sm text-ink-500">Filter:</span>
           <select
             value={filterProject}
             onChange={(e) => setFilterProject(e.target.value)}
-            className="rounded-xl border border-surface-200 bg-surface-100 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
+            className="rounded-xl border border-surface-200 bg-white/60 backdrop-blur-sm px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300"
           >
             <option value="all">All Projects</option>
             {projects.map((p) => (
@@ -111,25 +91,24 @@ export default function HistoryPage() {
               key={session.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
+              transition={{ delay: 0.3 + i * 0.02 }}
+              className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/70 p-4 shadow-soft hover:shadow-warm transition-shadow"
             >
-              <Card padding="sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-ink-900">{session.project_name}</span>
-                      <Badge size="sm">{session.duration_minutes}m</Badge>
-                    </div>
-                    <p className="text-xs text-ink-500">
-                      {session.topics.join(", ")} &middot; {session.accuracy}% accuracy
-                    </p>
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-ink-900">{session.project_name}</span>
+                    <Badge size="sm">{session.duration_minutes}m</Badge>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-coral-500">+{session.xp_earned} XP</p>
-                    <p className="text-xs text-ink-500">{new Date(session.date).toLocaleDateString()}</p>
-                  </div>
+                  <p className="text-xs text-ink-500 truncate">
+                    {session.topics.join(", ")} &middot; {session.accuracy}% accuracy
+                  </p>
                 </div>
-              </Card>
+                <div className="text-right flex-shrink-0 ml-3">
+                  <p className="text-sm font-bold text-coral-500">+{session.xp_earned} XP</p>
+                  <p className="text-xs text-ink-400">{new Date(session.date).toLocaleDateString()}</p>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
